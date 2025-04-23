@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.ShiyanshebeiDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.shiyanshebei_name as shiyanshebeiName
+        ,a.shiyanshebei_photo as shiyanshebeiPhoto
+        ,a.shiyanshebei_types as shiyanshebeiTypes
+        ,a.shiyanshebei_number as shiyanshebeiNumber
+        ,a.shiyanshi_id as shiyanshiId
+        ,a.shiyanshebei_content as shiyanshebeiContent
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.ShiyanshebeiView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,shiyanshi.shiyanshi_name as shiyanshiName
+        ,shiyanshi.shiyanshi_photo as shiyanshiPhoto
+        ,shiyanshi.shiyanshi_types as shiyanshiTypes
+        ,shiyanshi.status_types as statusTypes
+        ,shiyanshi.shiyanshi_content as shiyanshiContent
+
+        FROM shiyanshebei  a
+        left JOIN shiyanshi shiyanshi ON a.shiyanshi_id = shiyanshi.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.shiyanshebeiName != '' and params.shiyanshebeiName != null and params.shiyanshebeiName != 'null' ">
+                and a.shiyanshebei_name like CONCAT('%',#{params.shiyanshebeiName},'%')
+            </if>
+            <if test="params.shiyanshebeiTypes != null and params.shiyanshebeiTypes != ''">
+                and a.shiyanshebei_types = #{params.shiyanshebeiTypes}
+            </if>
+            <if test="params.shiyanshebeiNumberStart != null and params.shiyanshebeiNumberStart != ''">
+                <![CDATA[  and a.shiyanshebei_number >= #{params.shiyanshebeiNumberStart}   ]]>
+            </if>
+            <if test="params.shiyanshebeiNumberEnd != null and params.shiyanshebeiNumberEnd != ''">
+                <![CDATA[  and a.shiyanshebei_number <= #{params.shiyanshebeiNumberEnd}   ]]>
+            </if>
+             <if test="params.shiyanshebeiNumber != null and params.shiyanshebeiNumber != ''">
+                and a.shiyanshebei_number = #{params.shiyanshebeiNumber}
+             </if>
+            <if test="params.shiyanshiId != null and params.shiyanshiId != ''">
+                and (
+                    a.shiyanshi_id = #{params.shiyanshiId}
+                )
+            </if>
+            <if test=" params.shiyanshebeiContent != '' and params.shiyanshebeiContent != null and params.shiyanshebeiContent != 'null' ">
+                and a.shiyanshebei_content like CONCAT('%',#{params.shiyanshebeiContent},'%')
+            </if>
+
+                <!-- 判断实验室信息的id不为空 -->
+            <if test=" params.shiyanshiIdNotNull != '' and params.shiyanshiIdNotNull != null and params.shiyanshiIdNotNull != 'null' ">
+                and a.shiyanshi_id IS NOT NULL
+            </if>
+            <if test=" params.shiyanshiName != '' and params.shiyanshiName != null and params.shiyanshiName != 'null' ">
+                and shiyanshi.shiyanshi_name like CONCAT('%',#{params.shiyanshiName},'%')
+            </if>
+            <if test="params.shiyanshiTypes != null  and params.shiyanshiTypes != ''">
+                and shiyanshi.shiyanshi_types = #{params.shiyanshiTypes}
+            </if>
+
+            <if test="params.statusTypes != null  and params.statusTypes != ''">
+                and shiyanshi.status_types = #{params.statusTypes}
+            </if>
+
+            <if test=" params.shiyanshiContent != '' and params.shiyanshiContent != null and params.shiyanshiContent != 'null' ">
+                and shiyanshi.shiyanshi_content like CONCAT('%',#{params.shiyanshiContent},'%')
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>
